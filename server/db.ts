@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, conversations, messages, knowledgeBase, specialists, aiCredentials, taskLoops, userSettings, InsertUserSettings } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,77 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Conversation queries
+export async function createConversation(userId: number, title: string, description?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(conversations).values({ userId, title, description });
+}
+
+export async function getConversationsByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(conversations).where(eq(conversations.userId, userId));
+}
+
+// Message queries
+export async function createMessage(conversationId: number, userId: number, role: "user" | "assistant" | "system", content: string, aiModel?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(messages).values({ conversationId, userId, role, content, aiModel });
+}
+
+export async function getMessagesByConversationId(conversationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(messages).where(eq(messages.conversationId, conversationId));
+}
+
+// Knowledge base queries
+export async function addKnowledgeEntry(userId: number, topic: string, content: string, sourceType: string, sourceReference?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(knowledgeBase).values({ userId, topic, content, sourceType, sourceReference });
+}
+
+export async function getKnowledgeByTopic(userId: number, topic: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { and } = require("drizzle-orm");
+  return db.select().from(knowledgeBase).where(and(eq(knowledgeBase.userId, userId), eq(knowledgeBase.topic, topic)));
+}
+
+// Specialists queries
+export async function getSpecialistsByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(specialists).where(eq(specialists.userId, userId));
+}
+
+// AI Credentials queries
+export async function getAiCredentialsByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(aiCredentials).where(eq(aiCredentials.userId, userId));
+}
+
+// Task loops queries
+export async function getTaskLoopsByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(taskLoops).where(eq(taskLoops.userId, userId));
+}
+
+// User settings queries
+export async function getUserSettings(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.select().from(userSettings).where(eq(userSettings.userId, userId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateUserSettings(userId: number, settings: Partial<InsertUserSettings>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(userSettings).set(settings).where(eq(userSettings.userId, userId));
+}
