@@ -77,28 +77,36 @@
 - [x] Acompanhamento de questões contábeis
 - [x] Acompanhamento de questões sociais
 
-## Fase 8: Painel de Configurações
-- [ ] Edição de prompts do sistema
-- [ ] Definição de tarefas de looping
-- [ ] Configuração de parâmetros das IAs
-- [ ] Ajuste de tamanho de fonte
-- [ ] Gerenciamento de tema escuro
-- [ ] Backup e restauração de dados
+## Fase 8: Integração de Chaves de API
+- [x] Criar guia completo de inscrição para 16 IAs
+- [x] Fornecer links diretos e instruções passo a passo
+- [ ] Aguardar chaves de API do usuário
+- [ ] Validar e armazenar chaves de forma segura
+- [ ] Testar conexão com cada IA
+- [ ] Implementar fallback se uma IA falhar
+- [ ] Documentar status de cada IA
 
-## Fase 9: UI/UX e Otimização
-- [ ] Otimização para Xiaomi Redmi 14 C
-- [ ] Aplicação de tema escuro extremo
-- [ ] Testes de responsividade
-- [ ] Otimização de performance
-- [ ] Testes de usabilidade
+## Fase 9: Orquestração Real de IAs
+- [ ] Implementar chamadas paralelas para 16 IAs
+- [ ] Sincronizar respostas
+- [ ] Implementar timeout e retry
+- [ ] Coletar respostas de todas as IAs
+- [ ] Preparar para metacognição
 
-## Fase 10: Compilação
+## Fase 10: Metacognição e Análise
+- [ ] Implementar especialistas internos funcionais
+- [ ] Especialista em Lógica analisando respostas
+- [ ] Especialista em Empatia analisando tom
+- [ ] Especialista em Fatos verificando informações
+- [ ] Síntese final de respostas
+
+## Fase 11: Compilação do APK
 - [ ] Preparação do ambiente Android
 - [ ] Compilação do APK
 - [ ] Testes de funcionalidade
 - [ ] Geração de artefatos finais
 
-## Fase 11: Entrega
+## Fase 12: Entrega Final
 - [ ] Documentação completa
 - [ ] Manual do usuário
 - [ ] Guia de configuração
