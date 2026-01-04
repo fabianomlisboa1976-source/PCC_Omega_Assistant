@@ -2,6 +2,8 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { metacognitionRouter } from "./routers/metacognition";
+import { loopsRouter } from "./routers/loops";
 import { chatRouter } from "./routers/chat";
 import { aisRouter } from "./routers/ais";
 import { lifeRouter } from "./routers/life";
@@ -26,6 +28,8 @@ export const appRouter = router({
   ais: aisRouter,
   life: lifeRouter,
   specialists: specialistsRouter,
+  metacognition: metacognitionRouter,
+  loops: loopsRouter,
 });
 
 export type AppRouter = typeof appRouter;
