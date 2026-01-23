@@ -1,0 +1,138 @@
+name: Build APK with Capacitor
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: 'gradle'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        build-tools-version: '34.0.0'
+        ndk-version: '26.1.10909125'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build web application
+      run: pnpm build
+
+    - name: Install Capacitor CLI
+      run: npm install -g @capacitor/cli
+
+    - name: Install Capacitor packages
+      run: pnpm add @capacitor/core @capacitor/android
+
+    - name: Initialize Capacitor
+      run: npx cap init --web-dir dist/public --npm-client pnpm
+
+    - name: Add Android platform
+      run: npx cap add android
+
+    - name: Sync Capacitor
+      run: npx cap sync android
+
+    - name: Build APK Release
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleRelease --no-daemon
+
+    - name: Build APK Debug (if Release fails)
+      if: failure()
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon
+
+    - name: Upload APK Artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: pcc-omega-apk
+        path: |
+          android/app/build/outputs/apk/release/
+          android/app/build/outputs/apk/debug/
+        retention-days: 30
+
+    - name: Create Release
+      if: success()
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v7.0.0-${{ github.run_number }}
+        name: PCCΩ+ Assistant V7.0 - Build ${{ github.run_number }}
+        body: |
+          # PCCΩ+ Assistant V7.0
+          
+          **Build:** ${{ github.run_number }}
+          **Status:** ✅ Compilado com sucesso!
+          
+          ## Download
+          
+          O APK está disponível nos artifacts acima.
+          
+          ## Instalação
+          
+          1. Baixe o arquivo `app-release.apk`
+          2. Transfira para seu Xiaomi Redmi 14 C
+          3. Abra o Gerenciador de Arquivos
+          4. Toque no APK para instalar
+          
+          ## Funcionalidades
+          
+          - 💬 Chat com 16 IAs
+          - 🧠 Metacognição avançada
+          - 📅 Gerenciamento de vida
+          - ⚙️ Configurações editáveis
+          - 🌙 Tema escuro extremo
+          
+          ---
+          
+          **Desenvolvido com ❤️**
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+
+    - name: Job Summary
+      if: always()
+      run: |
+        echo "## 📱 Build Status" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Number:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch:** ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📥 Download" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "O APK está disponível em:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Artifacts:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Releases:** https://github.com/${{ github.repository }}/releases" >> $GITHUB_STEP_SUMMARY
