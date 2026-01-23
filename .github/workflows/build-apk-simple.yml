@@ -1,0 +1,86 @@
+name: Build APK (Simplified)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        build-tools-version: '34.0.0'
+    
+    - name: Install pnpm
+      run: npm install -g pnpm
+    
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+    
+    - name: Build web
+      run: pnpm build
+    
+    - name: Install Cordova
+      run: npm install -g cordova
+    
+    - name: Create Cordova project
+      run: |
+        cordova create cordova-app com.pocol.pccassistant "PCC Omega Assistant"
+        cd cordova-app
+        cordova platform add android
+    
+    - name: Copy web assets
+      run: |
+        rm -rf cordova-app/www/*
+        cp -r dist/public/* cordova-app/www/
+    
+    - name: Build APK Release
+      run: |
+        cd cordova-app
+        cordova build android --release
+    
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: PCC-Omega-Assistant-APK
+        path: cordova-app/platforms/android/app/build/outputs/apk/release/
+        retention-days: 30
+
+    - name: Create Release
+      if: success()
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v7.0.0-${{ github.run_number }}
+        release_name: PCC Omega Assistant V7.0 Build ${{ github.run_number }}
+        body: |
+          APK compilado com sucesso!
+          
+          **Download:** Veja os artifacts acima
+          
+          **Instruções de instalação:**
+          1. Baixe o arquivo APK
+          2. Transfira para seu Xiaomi Redmi 14 C
+          3. Abra o gerenciador de arquivos
+          4. Toque no APK para instalar
